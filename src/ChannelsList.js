@@ -34,7 +34,7 @@ export default class ChannelsList extends EventEmitter {
             parent: this.screen,
             top: 'top',
             left: 'left',
-            width: '30%',
+            width: '20%',
             height: '100%',
             label: "Channels (Ctrl-l)",
             tags: true,
@@ -47,11 +47,9 @@ export default class ChannelsList extends EventEmitter {
             },
             style: {
                 fg: this.config.channelsList.style.fg,
+                bg: this.config.channelsList.style.bg,
                 border: {
-                    fg: this.config.channelsList.style.border.fg,
-                },
-                hover: {
-                    bg: this.config.channelsList.style.hover.bg,
+                    fg: this.config.channelsList.style.border.fg
                 }
             },
             search: function(callback) {

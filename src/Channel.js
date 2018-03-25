@@ -5,10 +5,11 @@ const MessageForm = require('./MessageForm');
 
 export default class ChannelBox {
 
-    constructor(channel, screen, api) {
+    constructor(channel, screen, api, config) {
         this.channel = channel;
         this.screen = screen;
         this.api = api;
+        this.config = config;
 
         this.box = blessed.box({
             parent: this.screen,

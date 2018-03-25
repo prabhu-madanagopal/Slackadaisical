@@ -9,6 +9,8 @@ export default class MessagesList {
         this.channel = channel;
         this.screen = this.channel.screen;
         this.api = this.channel.api;
+        this.config = this.channel.config;
+        
         this.exists = true;
 
         this.box = blessed.box({
@@ -45,7 +47,7 @@ export default class MessagesList {
     getUserReplacementMap() {
         let map = {};
         Object.values(this.api.users).forEach(u => {
-            map['@' + u.id] = '@' + u.name;
+            map['@' + u.id] = '@' + this.api.getUserName(u.id);
         });
         return map;
     }
@@ -79,27 +81,64 @@ export default class MessagesList {
         let lines = [];
         const width = parseInt(this.box.width) - 15;
         const userMap = this.getUserReplacementMap();
+        let lastUserName = "";
+        let lastDate = "";
+        let userColorsMap = {};
+        let userColorIndex = 0;
         this.messages
-                .filter(m => m.type === 'message')
-                .forEach(m => {
-                    const userName = (typeof m.user !== 'undefined')
-                        ? this.api.getUserName(m.user)
-                        : (m.username ? m.username : 'Unknown User')
-                    ;
-                    let time = moment.unix(m.ts);
-                    let formattedTime = time.format('h:mma')
-                    let text = (m.text ? m.text : JSON.stringify(m));
-                    let content = '{bold}{green-fg}'+userName + '{/bold}{green-fg} '
+            .filter(m => m.type === 'message')
+            .forEach(m => {
+                const userName = (typeof m.user !== 'undefined')
+                    ? this.api.getUserName(m.user)
+                    : (m.username ? m.username : 'Unknown User')
+                ;
+                let time = moment.unix(m.ts);
+                let formattedTime = time.format('h:mma')
+                let formattedDate = time.format('ddd, MMM Do');
+                let text = (m.text ? m.text : JSON.stringify(m));
+                let content = "";
+                let isSameOrigin =false;
+                let color  = 'green';
+                if (userName === this.config.messageList.userName) {
+                    color = this.config.messageList.userColor;
+                }
+                else {
+                    let colorIndex = userColorsMap[userName];
+                    if (typeof colorIndex === 'undefined') {
+                        colorIndex = userColorIndex % this.config.messageList.userColors.length;
+                        userColorsMap[userName] = colorIndex;
+                        userColorIndex++;
+                    }
+                    color = this.config.messageList.userColors[colorIndex];
+                }
+                if (lastDate !== formattedDate) {
+                    content = '{bold}{underline}{default-fg}'+formattedDate+':{default-fg}{/underline}{/bold}' + "\n\n";
+                }
+                if (userName === lastUserName) {
+                    isSameOrigin = true;
+                    content = content + text;
+                }
+                else {
+                    content = content + '{bold}{'+color+'-fg}'+userName + '{/bold}{'+color+'-fg} '
                         + '{cyan-fg}'+formattedTime+"{/cyan-fg}: \n"
                         + text;
-                    for (const replaceId in userMap) {
-                        const replaceName = userMap[replaceId];
-                        content = content.replace(replaceId, replaceName);
-                    }
-                    const wrapped = wrap(content, {width}) + "\n";
-                    const exploded = wrapped.split("\n");
-                    lines = lines.concat(exploded);
-                });
+                }
+                for (const replaceId in userMap) {
+                    const replaceName = userMap[replaceId];
+                    content = content.replace(replaceId, replaceName);
+                }
+                let wrapped = "";
+                if (isSameOrigin) {
+                    wrapped = wrap(content, {width});
+                }
+                else {
+                    wrapped = "\n" +  wrap(content, {width});
+                }
+                const exploded = wrapped.split("\n");
+                lines = lines.concat(exploded);
+                lastUserName = userName;
+                lastDate = formattedDate;
+            });
 
         this.box.setContent(lines.join("\n") + "\n");
         this.box.setScrollPerc(100);

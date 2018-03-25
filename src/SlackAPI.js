@@ -87,6 +87,7 @@ export default class SlackAPI extends EventEmitter {
         let display_name = channel.name || '';
 
         if (channel.is_im) {
+            this.screen.log("API: getChannelDisplayName " + channel.user+ " is_im");
             display_name = '@' + this.getUserName(channel.user);
         } else if (channel.is_mpim) {
             display_name = '@' + display_name
@@ -96,7 +97,6 @@ export default class SlackAPI extends EventEmitter {
         } else if (channel.is_channel || channel.is_private) {
             display_name = '#' + display_name;
         }
-
         return display_name;
 
     }
@@ -154,11 +154,25 @@ export default class SlackAPI extends EventEmitter {
     }
 
     getUser(id) {
+        let user = this.users[id];
+        this.screen.log("fetching user " + user + " for id "+id);
+        if (typeof user === 'undefined') {
+            this.screen.log("fetching user id " + id);
+            this.fetchUser(id, userInfo => {
+
+                this.screen.log("API: Emitting" + userInfo+ "  user");
+                this.emit('user info', userInfo);
+            });
+        }
         return this.users[id] || {id, name: id};
     }
 
     getUserName(id) {
-        return this.getUser(id).name;
+        let user = this.getUser(id);
+        if (typeof user.profile === 'undefined') {
+            return id;
+        }
+        return user.profile.display_name;
     }
 
     postMessage(channel, text, callback) {
@@ -182,9 +196,21 @@ export default class SlackAPI extends EventEmitter {
         );
     }
 
+    fetchUser(id, callback) {
+        return this.get('users.info', {user: id}, (err, resp, body) => {
+            let out = {};
+            if (typeof body !== 'undefined') {
+                this.screen.log("API: user" + body.user+ " body user");
+                this.users[body.user.id] = body.user;
+                if (typeof callback === 'function') callback(body.user);
+            }
+        });
+    }
+
     fetchUsers(callback) {
         return this.get('users.list', {}, (err, resp, body) => {
             let out = {};
+            this.screen.log("API: members " + body.members+ " body members");
             body.members.forEach(member => {
                 out[member.id] = member;
             });

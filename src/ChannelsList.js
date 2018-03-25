@@ -20,14 +20,16 @@ const shuffle = (a) => {
 
 export default class ChannelsList extends EventEmitter {
 
-    constructor(screen, api) {
+    constructor(screen, api, config) {
         super();
 
         this.selectedChannelId = null;
         this.screen = screen;
         this.api = api;
+        this.config = config;
         this.channels = [];
 
+        this.screen.log("hover bg" + this.config.channelsList.style.hover.bg);
 
         this.box = blessed.list({
             parent: this.screen,
@@ -45,12 +47,12 @@ export default class ChannelsList extends EventEmitter {
                 type: 'line'
             },
             style: {
-                fg: 'white',
+                fg: this.config.channelsList.style.fg,
                 border: {
-                    fg: 'yellow',
+                    fg: this.config.channelsList.style.border.fg,
                 },
                 hover: {
-                    bg: 'green'
+                    bg: this.config.channelsList.style.hover.bg,
                 }
             },
             search: function(callback) {
@@ -139,6 +141,22 @@ export default class ChannelsList extends EventEmitter {
 
     }
 
+    initUserListener() {
+        this.api.on('user info', (user) => {
+            
+                        this.screen.log("Received user info " + user);
+            for (const index in this.channels) {
+                const ch = this.channels[index];
+                        this.screen.log("matching " + ch.is_im + "and display_name " + ch.display_name + " user  "+user.id);
+                if (ch.is_im && ch.display_name === '@' + user.id) {
+                    this.channels[index].display_name= '@' + user.profile.display_name;
+                    break;
+                }
+            }
+            this.renderChannels();
+        }); 
+    }
+
     setChannels(channels) {
 
         this.channels = channels.map(ch => {
@@ -161,6 +179,7 @@ export default class ChannelsList extends EventEmitter {
         });
 
         this.renderChannels();
+        this.initUserListener();
     }
 
     renderChannels() {

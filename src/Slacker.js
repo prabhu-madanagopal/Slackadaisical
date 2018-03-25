@@ -7,8 +7,8 @@ const moment = require('moment');
 
 export default class Slacker {
 
-    constructor(token) {
-        this.token = token;
+    constructor(config) {
+        this.config = config;
 
         this.screen = blessed.screen({
             smartCSR: true,
@@ -20,8 +20,8 @@ export default class Slacker {
             fullUnicode: true,
         });
 
-        this.api = new SlackAPI(this.token, this.screen);
-        this.channelsList = new ChannelsList(this.screen, this.api);
+        this.api = new SlackAPI(this.config.token, this.screen);
+        this.channelsList = new ChannelsList(this.screen, this.api, this.config);
         this.channel = null;
         this.channelBox = null;
 
@@ -36,7 +36,7 @@ export default class Slacker {
             this.channelBox = null;
         }
 
-        this.channelBox = new ChannelBox(this.channel, this.screen, this.api);
+        this.channelBox = new ChannelBox(this.channel, this.screen, this.api, this.config);
 
     }
 
@@ -69,6 +69,7 @@ export default class Slacker {
         });
 
         this.channelsList.init();
+        this.channelsList.box.focus();
     }
 
 }

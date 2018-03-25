@@ -87,7 +87,6 @@ export default class SlackAPI extends EventEmitter {
         let display_name = channel.name || '';
 
         if (channel.is_im) {
-            this.screen.log("API: getChannelDisplayName " + channel.user+ " is_im");
             display_name = '@' + this.getUserName(channel.user);
         } else if (channel.is_mpim) {
             display_name = '@' + display_name
@@ -155,12 +154,10 @@ export default class SlackAPI extends EventEmitter {
 
     getUser(id) {
         let user = this.users[id];
-        this.screen.log("fetching user " + user + " for id "+id);
         if (typeof user === 'undefined') {
             this.screen.log("fetching user id " + id);
             this.fetchUser(id, userInfo => {
 
-                this.screen.log("API: Emitting" + userInfo+ "  user");
                 this.emit('user info', userInfo);
             });
         }
@@ -210,7 +207,6 @@ export default class SlackAPI extends EventEmitter {
     fetchUsers(callback) {
         return this.get('users.list', {}, (err, resp, body) => {
             let out = {};
-            this.screen.log("API: members " + body.members+ " body members");
             body.members.forEach(member => {
                 out[member.id] = member;
             });

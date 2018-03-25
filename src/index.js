@@ -15,7 +15,7 @@ try {
     let rawData = fs.readFileSync(configPath).toString().trim();
     config = JSON.parse(rawData);
 } catch (e) {
-    console.log("Could not find a slack config at " + e);
+    console.log("Exception reading config at "+ configPath + "\n" + e);
     process.exit(1);
 }
 

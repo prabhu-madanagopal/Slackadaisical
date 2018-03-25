@@ -29,7 +29,6 @@ export default class ChannelsList extends EventEmitter {
         this.config = config;
         this.channels = [];
 
-        this.screen.log("hover bg" + this.config.channelsList.style.hover.bg);
 
         this.box = blessed.list({
             parent: this.screen,
@@ -143,11 +142,9 @@ export default class ChannelsList extends EventEmitter {
 
     initUserListener() {
         this.api.on('user info', (user) => {
-            
-                        this.screen.log("Received user info " + user);
+
             for (const index in this.channels) {
                 const ch = this.channels[index];
-                        this.screen.log("matching " + ch.is_im + "and display_name " + ch.display_name + " user  "+user.id);
                 if (ch.is_im && ch.display_name === '@' + user.id) {
                     this.channels[index].display_name= '@' + user.profile.display_name;
                     break;
@@ -245,7 +242,7 @@ export default class ChannelsList extends EventEmitter {
 
             setTimeout(() => {
                 this.api.fetchChannelHistory(channel, history => {
-                   // check for rate limit
+                    // check for rate limit
                     if (history.ok) {
                         this.channels[index].history = {...history, lastUpdated: Date.now()};
                         this.setChannels(this.channels);

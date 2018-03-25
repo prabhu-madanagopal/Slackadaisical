@@ -48,8 +48,10 @@ export default class ChannelsList extends EventEmitter {
             style: {
                 fg: this.config.channelsList.style.fg,
                 bg: this.config.channelsList.style.bg,
-                border: {
-                    fg: this.config.channelsList.style.border.fg
+                focus: {
+                    border: {
+                        fg: this.config.channelsList.style.focus.border.fg
+                    }
                 }
             },
             search: function(callback) {

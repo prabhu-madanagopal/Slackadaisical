@@ -24,9 +24,10 @@ export default class ChannelBox {
                 type: 'line'
             },
             style: {
-                fg: 'white',
-                border: {
-                    fg: 'yellow',
+                focus : {
+                    border: {
+                        fg: this.config.messageList.style.focus.border.fg
+                    }
                 }
             }
         });

@@ -28,7 +28,7 @@ export default class MessageForm {
             keys: true,
             inputOnFocus: true,
             label: 'Write Message (Ctrl-o)',
-            border: {type: 'line', fg: 'yellow' }
+            border: {type: 'line', fg: 'default' }
         });
 
         this.textbox.key('enter', (ch, key) => {

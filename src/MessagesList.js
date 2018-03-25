@@ -10,7 +10,7 @@ export default class MessagesList {
         this.screen = this.channel.screen;
         this.api = this.channel.api;
         this.config = this.channel.config;
-        
+
         this.exists = true;
 
         this.box = blessed.box({
@@ -31,8 +31,10 @@ export default class MessagesList {
                 inverse: true
             },
             style: {
-                border: {
-                    fg: 'yellow',
+                focus: {
+                    border: {
+                        fg: this.config.messageList.style.focus.border.fg
+                    }
                 }
             }
         });

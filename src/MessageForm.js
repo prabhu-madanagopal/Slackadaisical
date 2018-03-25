@@ -12,9 +12,8 @@ export default class MessageForm {
             keys: true,
             left: 0,
             bottom: 0,
-            width: '100%-2',
-            height: 4,
-            // border: {type: 'line'}
+            width: '100%',
+            height: 5,
         });
 
         this.textbox = blessed.textbox({
@@ -22,7 +21,7 @@ export default class MessageForm {
             left: 0,
             top: 0,
             width: '100%',
-            height: 4,
+            height: 5,
             input: true,
             mouse: true,
             keys: true,

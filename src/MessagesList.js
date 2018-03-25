@@ -16,27 +16,31 @@ export default class MessagesList {
         this.box = blessed.box({
             parent: this.channel.box,
             top: 'top',
+            label: this.api.getChannelDisplayName(this.channel.channel) + ' (Ctrl-y)',
             left: '0%',
-            width: '100%-2',
-            height: '100%-6',
+            width: '100%',
+            height: '100%',
             tags: true,
             scrollable: true,
             alwaysScroll: true,
             input: true,
             mouse: true,
             vi: true,
+            border: {
+                type: 'line'
+            },
+             style: {
+                focus: {
+                    border: {
+                        fg: this.config.style.focus.border.fg
+                    }
+                }
+            },
             keys: true,
             scrollbar: {
                 ch: " ",
                 inverse: true
             },
-            style: {
-                focus: {
-                    border: {
-                        fg: this.config.messageList.style.focus.border.fg
-                    }
-                }
-            }
         });
 
         this.messages = [];
@@ -100,6 +104,7 @@ export default class MessagesList {
                 let text = (m.text ? m.text : JSON.stringify(m));
                 let content = "";
                 let isSameOrigin =false;
+                let isSameDay =true;
                 let color  = 'green';
                 if (userName === this.config.messageList.userName) {
                     color = this.config.messageList.userColor;
@@ -114,14 +119,15 @@ export default class MessagesList {
                     color = this.config.messageList.userColors[colorIndex];
                 }
                 if (lastDate !== formattedDate) {
-                    content = '{bold}{underline}{default-fg}'+formattedDate+':{default-fg}{/underline}{/bold}' + "\n\n";
+                    content = '{bold}{underline}{default-fg}'+formattedDate+':{/default-fg}{/underline}{/bold}' + "\n\n";
+                    isSameDay = false;
                 }
                 if (userName === lastUserName) {
                     isSameOrigin = true;
                     content = content + text;
                 }
                 else {
-                    content = content + '{bold}{'+color+'-fg}'+userName + '{/bold}{'+color+'-fg} '
+                    content = content + '{'+color+'-fg}'+userName + '{/'+color+'-fg} '
                         + '{cyan-fg}'+formattedTime+"{/cyan-fg}: \n"
                         + text;
                 }
@@ -130,7 +136,7 @@ export default class MessagesList {
                     content = content.replace(replaceId, replaceName);
                 }
                 let wrapped = "";
-                if (isSameOrigin) {
+                if (isSameOrigin && isSameDay) {
                     wrapped = wrap(content, {width});
                 }
                 else {

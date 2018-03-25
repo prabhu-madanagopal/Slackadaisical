@@ -50,7 +50,7 @@ export default class ChannelsList extends EventEmitter {
                 bg: this.config.channelsList.style.bg,
                 focus: {
                     border: {
-                        fg: this.config.channelsList.style.focus.border.fg
+                        fg: this.config.style.focus.border.fg
                     }
                 }
             },

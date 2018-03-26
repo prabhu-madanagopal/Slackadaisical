@@ -14,6 +14,8 @@ var ChannelsList = require('./ChannelsList');
 var ChannelBox = require('./Channel');
 var moment = require('moment');
 
+var child_process = require('child_process');
+
 var Slacker = function () {
     function Slacker(config) {
         _classCallCheck(this, Slacker);
@@ -30,7 +32,9 @@ var Slacker = function () {
             fullUnicode: true
         });
 
-        this.api = new SlackAPI(this.config.token, this.screen);
+        var token = this.getStdout(this.config.tokenCommand);
+
+        this.api = new SlackAPI(token, this.screen);
         this.channelsList = new ChannelsList(this.screen, this.api, this.config);
         this.channel = null;
         this.channelBox = null;
@@ -39,6 +43,12 @@ var Slacker = function () {
     }
 
     _createClass(Slacker, [{
+        key: 'getStdout',
+        value: function getStdout(cmd) {
+            var stdout = child_process.execSync(cmd);
+            return stdout.toString().trim();
+        }
+    }, {
         key: 'changeChannel',
         value: function changeChannel(channel) {
             this.channel = channel;

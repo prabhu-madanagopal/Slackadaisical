@@ -5,6 +5,8 @@ const ChannelsList = require('./ChannelsList');
 const ChannelBox = require('./Channel');
 const moment = require('moment');
 
+var child_process = require('child_process');
+
 export default class Slacker {
 
     constructor(config) {
@@ -20,12 +22,19 @@ export default class Slacker {
             fullUnicode: true,
         });
 
-        this.api = new SlackAPI(this.config.token, this.screen);
+        let token = this.getStdout(this.config.tokenCommand);
+
+        this.api = new SlackAPI(token, this.screen);
         this.channelsList = new ChannelsList(this.screen, this.api, this.config);
         this.channel = null;
         this.channelBox = null;
 
         this.screen.log(moment().format() + ": Slacker Init");
+    }
+
+    getStdout(cmd) {
+        let stdout = child_process.execSync(cmd);
+        return stdout.toString().trim();
     }
 
     changeChannel(channel) {

@@ -19,29 +19,37 @@ var MessagesList = function () {
         this.channel = channel;
         this.screen = this.channel.screen;
         this.api = this.channel.api;
+        this.config = this.channel.config;
+
         this.exists = true;
 
         this.box = blessed.box({
             parent: this.channel.box,
             top: 'top',
+            label: this.api.getChannelDisplayName(this.channel.channel) + ' (Ctrl-y)',
             left: '0%',
-            width: '100%-2',
-            height: '100%-6',
+            width: '100%',
+            height: '100%-4',
             tags: true,
             scrollable: true,
             alwaysScroll: true,
             input: true,
             mouse: true,
             vi: true,
+            border: {
+                type: 'line'
+            },
+            style: {
+                focus: {
+                    border: {
+                        fg: this.config.style.focus.border.fg
+                    }
+                }
+            },
             keys: true,
             scrollbar: {
                 ch: " ",
                 inverse: true
-            },
-            style: {
-                border: {
-                    fg: 'yellow'
-                }
             }
         });
 
@@ -55,9 +63,11 @@ var MessagesList = function () {
     _createClass(MessagesList, [{
         key: 'getUserReplacementMap',
         value: function getUserReplacementMap() {
+            var _this = this;
+
             var map = {};
             Object.values(this.api.users).forEach(function (u) {
-                map['@' + u.id] = '@' + u.name;
+                map['@' + u.id] = '@' + _this.api.getUserName(u.id);
             });
             return map;
         }
@@ -79,10 +89,10 @@ var MessagesList = function () {
     }, {
         key: 'refresh',
         value: function refresh() {
-            var _this = this;
+            var _this2 = this;
 
             this.api.fetchChannelHistory(this.channel.channel, function (history) {
-                _this.loadHistory(history);
+                _this2.loadHistory(history);
             });
         }
     }, {
@@ -95,28 +105,64 @@ var MessagesList = function () {
     }, {
         key: 'render',
         value: function render() {
-            var _this2 = this;
+            var _this3 = this;
 
             // prevent against
             if (!this.box) return null;
             var lines = [];
             var width = parseInt(this.box.width) - 15;
             var userMap = this.getUserReplacementMap();
+            var lastUserName = "";
+            var lastDate = "";
+            var userColorsMap = {};
+            var userColorIndex = 0;
             this.messages.filter(function (m) {
                 return m.type === 'message';
             }).forEach(function (m) {
-                var userName = typeof m.user !== 'undefined' ? _this2.api.getUserName(m.user) : m.username ? m.username : 'Unknown User';
+                var userName = typeof m.user !== 'undefined' ? _this3.api.getUserName(m.user) : m.username ? m.username : 'Unknown User';
                 var time = moment.unix(m.ts);
                 var formattedTime = time.format('h:mma');
+                var formattedDate = time.format('ddd, MMM Do');
                 var text = m.text ? m.text : JSON.stringify(m);
-                var content = '{bold}{green-fg}' + userName + '{/bold}{green-fg} ' + '{cyan-fg}' + formattedTime + "{/cyan-fg}: \n" + text;
+                var content = "";
+                var isSameOrigin = false;
+                var isSameDay = true;
+                var color = 'green';
+                if (userName === _this3.config.messageList.userName) {
+                    color = _this3.config.messageList.userColor;
+                } else {
+                    var colorIndex = userColorsMap[userName];
+                    if (typeof colorIndex === 'undefined') {
+                        colorIndex = userColorIndex % _this3.config.messageList.userColors.length;
+                        userColorsMap[userName] = colorIndex;
+                        userColorIndex++;
+                    }
+                    color = _this3.config.messageList.userColors[colorIndex];
+                }
+                if (lastDate !== formattedDate) {
+                    content = '{bold}{underline}{default-fg}' + formattedDate + ':{/default-fg}{/underline}{/bold}' + "\n\n";
+                    isSameDay = false;
+                }
+                if (userName === lastUserName) {
+                    isSameOrigin = true;
+                    content = content + text;
+                } else {
+                    content = content + '{' + color + '-fg}' + userName + '{/' + color + '-fg} ' + '{cyan-fg}' + formattedTime + "{/cyan-fg}: \n" + text;
+                }
                 for (var replaceId in userMap) {
                     var replaceName = userMap[replaceId];
                     content = content.replace(replaceId, replaceName);
                 }
-                var wrapped = wrap(content, { width: width }) + "\n";
+                var wrapped = "";
+                if (isSameOrigin && isSameDay) {
+                    wrapped = wrap(content, { width: width });
+                } else {
+                    wrapped = "\n" + wrap(content, { width: width });
+                }
                 var exploded = wrapped.split("\n");
                 lines = lines.concat(exploded);
+                lastUserName = userName;
+                lastDate = formattedDate;
             });
 
             this.box.setContent(lines.join("\n") + "\n");

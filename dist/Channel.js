@@ -13,31 +13,22 @@ var MessagesList = require('./MessagesList');
 var MessageForm = require('./MessageForm');
 
 var ChannelBox = function () {
-    function ChannelBox(channel, screen, api) {
+    function ChannelBox(channel, screen, api, config) {
         _classCallCheck(this, ChannelBox);
 
         this.channel = channel;
         this.screen = screen;
         this.api = api;
+        this.config = config;
 
         this.box = blessed.box({
             parent: this.screen,
-            label: this.api.getChannelDisplayName(channel) + ' (Ctrl-y)',
             top: 'top',
-            left: '30%',
-            width: '70%',
+            left: '20%',
+            width: '80%',
             height: '100%',
             input: true,
-            mouse: true,
-            border: {
-                type: 'line'
-            },
-            style: {
-                fg: 'white',
-                border: {
-                    fg: 'yellow'
-                }
-            }
+            mouse: true
         });
 
         this.messagesList = new MessagesList(this);

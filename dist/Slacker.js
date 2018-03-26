@@ -15,14 +15,14 @@ var ChannelBox = require('./Channel');
 var moment = require('moment');
 
 var Slacker = function () {
-    function Slacker(token) {
+    function Slacker(config) {
         _classCallCheck(this, Slacker);
 
-        this.token = token;
+        this.config = config;
 
         this.screen = blessed.screen({
             smartCSR: true,
-            log: process.env.PWD + '/slacker.log',
+            log: process.env.TMPDIR + '/slacker.log',
             debug: true,
             dockBorders: true,
             autoPadding: true,
@@ -30,8 +30,8 @@ var Slacker = function () {
             fullUnicode: true
         });
 
-        this.api = new SlackAPI(this.token, this.screen);
-        this.channelsList = new ChannelsList(this.screen, this.api);
+        this.api = new SlackAPI(this.config.token, this.screen);
+        this.channelsList = new ChannelsList(this.screen, this.api, this.config);
         this.channel = null;
         this.channelBox = null;
 
@@ -48,7 +48,7 @@ var Slacker = function () {
                 this.channelBox = null;
             }
 
-            this.channelBox = new ChannelBox(this.channel, this.screen, this.api);
+            this.channelBox = new ChannelBox(this.channel, this.screen, this.api, this.config);
         }
     }, {
         key: 'init',
@@ -82,6 +82,7 @@ var Slacker = function () {
             });
 
             this.channelsList.init();
+            this.channelsList.box.focus();
         }
     }]);
 

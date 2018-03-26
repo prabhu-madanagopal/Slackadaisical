@@ -111,7 +111,6 @@ var SlackAPI = function (_EventEmitter) {
             } else if (channel.is_channel || channel.is_private) {
                 display_name = '#' + display_name;
             }
-
             return display_name;
         }
     }, {
@@ -171,12 +170,26 @@ var SlackAPI = function (_EventEmitter) {
     }, {
         key: 'getUser',
         value: function getUser(id) {
+            var _this5 = this;
+
+            var user = this.users[id];
+            if (typeof user === 'undefined') {
+                this.screen.log("fetching user id " + id);
+                this.fetchUser(id, function (userInfo) {
+
+                    _this5.emit('user info', userInfo);
+                });
+            }
             return this.users[id] || { id: id, name: id };
         }
     }, {
         key: 'getUserName',
         value: function getUserName(id) {
-            return this.getUser(id).name;
+            var user = this.getUser(id);
+            if (typeof user.profile === 'undefined') {
+                return id;
+            }
+            return user.profile.display_name;
         }
     }, {
         key: 'postMessage',
@@ -186,7 +199,7 @@ var SlackAPI = function (_EventEmitter) {
     }, {
         key: 'fetchChannels',
         value: function fetchChannels(callback) {
-            var _this5 = this;
+            var _this6 = this;
 
             return this.get('conversations.list', { exclude_archived: true, types: 'public_channel,private_channel,mpim,im', limit: 500 }, function (err, resp, body) {
 
@@ -216,22 +229,36 @@ var SlackAPI = function (_EventEmitter) {
                     }
                 }
 
-                _this5.channels = out;
+                _this6.channels = out;
 
                 if (typeof callback === 'function') callback(out);
             });
         }
     }, {
+        key: 'fetchUser',
+        value: function fetchUser(id, callback) {
+            var _this7 = this;
+
+            return this.get('users.info', { user: id }, function (err, resp, body) {
+                var out = {};
+                if (typeof body !== 'undefined') {
+                    _this7.screen.log("API: user" + body.user + " body user");
+                    _this7.users[body.user.id] = body.user;
+                    if (typeof callback === 'function') callback(body.user);
+                }
+            });
+        }
+    }, {
         key: 'fetchUsers',
         value: function fetchUsers(callback) {
-            var _this6 = this;
+            var _this8 = this;
 
             return this.get('users.list', {}, function (err, resp, body) {
                 var out = {};
                 body.members.forEach(function (member) {
                     out[member.id] = member;
                 });
-                _this6.users = out;
+                _this8.users = out;
                 if (typeof callback === 'function') callback(out);
             });
         }

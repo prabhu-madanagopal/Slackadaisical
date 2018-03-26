@@ -3,21 +3,22 @@
 
 var fs = require('fs');
 var Slacker = require('./Slacker');
-var tokenPath = process.env.HOME + '/.slack_token';
+var configPath = process.env.HOME + '/.config/slackadaisical/config.json';
 var values = require('object.values');
 
 if (!Object.values) {
     values.shim();
 }
 
-var token = null;
+var config = null;
 
 try {
-    token = fs.readFileSync(tokenPath).toString().trim();
+    var rawData = fs.readFileSync(configPath).toString().trim();
+    config = JSON.parse(rawData);
 } catch (e) {
-    console.log("Could not find a slack token at " + tokenPath);
+    console.log("Exception reading config at " + configPath + "\n" + e);
     process.exit(1);
 }
 
-var app = new Slacker(token);
+var app = new Slacker(config);
 app.init();

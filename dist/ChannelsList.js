@@ -38,7 +38,7 @@ var shuffle = function shuffle(a) {
 var ChannelsList = function (_EventEmitter) {
     _inherits(ChannelsList, _EventEmitter);
 
-    function ChannelsList(screen, api) {
+    function ChannelsList(screen, api, config) {
         _classCallCheck(this, ChannelsList);
 
         var _this = _possibleConstructorReturn(this, (ChannelsList.__proto__ || Object.getPrototypeOf(ChannelsList)).call(this));
@@ -46,13 +46,14 @@ var ChannelsList = function (_EventEmitter) {
         _this.selectedChannelId = null;
         _this.screen = screen;
         _this.api = api;
+        _this.config = config;
         _this.channels = [];
 
         _this.box = blessed.list({
             parent: _this.screen,
             top: 'top',
             left: 'left',
-            width: '30%',
+            width: '20%',
             height: '100%',
             label: "Channels (Ctrl-l)",
             tags: true,
@@ -64,12 +65,12 @@ var ChannelsList = function (_EventEmitter) {
                 type: 'line'
             },
             style: {
-                fg: 'white',
-                border: {
-                    fg: 'yellow'
-                },
-                hover: {
-                    bg: 'green'
+                fg: _this.config.channelsList.style.fg,
+                bg: _this.config.channelsList.style.bg,
+                focus: {
+                    border: {
+                        fg: _this.config.style.focus.border.fg
+                    }
                 }
             },
             search: function search(callback) {
@@ -158,14 +159,31 @@ var ChannelsList = function (_EventEmitter) {
             });
         }
     }, {
+        key: 'initUserListener',
+        value: function initUserListener() {
+            var _this3 = this;
+
+            this.api.on('user info', function (user) {
+
+                for (var index in _this3.channels) {
+                    var ch = _this3.channels[index];
+                    if (ch.is_im && ch.display_name === '@' + user.id) {
+                        _this3.channels[index].display_name = '@' + user.profile.display_name;
+                        break;
+                    }
+                }
+                _this3.renderChannels();
+            });
+        }
+    }, {
         key: 'setChannels',
         value: function setChannels(channels) {
-            var _this3 = this;
+            var _this4 = this;
 
             this.channels = channels.map(function (ch) {
                 ch = Object.assign({}, ch);
                 // ch.history = {unread_count_display: 3};
-                ch.display_name = _this3.api.getChannelDisplayName(ch);
+                ch.display_name = _this4.api.getChannelDisplayName(ch);
 
                 if (typeof ch.history !== 'undefined' && typeof ch.history.unread_count_display !== 'undefined') {
                     ch.display_name = '(' + ch.history.unread_count_display + ') ' + ch.display_name;
@@ -179,11 +197,12 @@ var ChannelsList = function (_EventEmitter) {
             });
 
             this.renderChannels();
+            this.initUserListener();
         }
     }, {
         key: 'renderChannels',
         value: function renderChannels() {
-            var _this4 = this;
+            var _this5 = this;
 
             // this.box.clearItems();
 
@@ -215,10 +234,10 @@ var ChannelsList = function (_EventEmitter) {
                 return ats < bts ? 1 : -1;
             }).forEach(function (ch, i) {
                 // check if has item first
-                if (typeof _this4.box.items[i] !== 'undefined') {
-                    _this4.box.setItem(parseInt(i), ch.display_name);
+                if (typeof _this5.box.items[i] !== 'undefined') {
+                    _this5.box.setItem(parseInt(i), ch.display_name);
                 } else {
-                    _this4.box.addItem(ch.display_name);
+                    _this5.box.addItem(ch.display_name);
                 }
             });
 
@@ -228,7 +247,7 @@ var ChannelsList = function (_EventEmitter) {
     }, {
         key: 'fetchAllHistories',
         value: function fetchAllHistories() {
-            var _this5 = this;
+            var _this6 = this;
 
             // only refresh REFRESH_CHANNEL_LIMIT channels, if they're more than REFRESH_TTL old, every REFRESH_INTERVAL
             var delay = 10;
@@ -245,7 +264,7 @@ var ChannelsList = function (_EventEmitter) {
                 var _loop = function _loop() {
                     var index = _step.value;
 
-                    var channel = _this5.channels[index];
+                    var channel = _this6.channels[index];
                     var lastUpdate = (channel.history || {}).lastUpdated;
                     if (typeof lastUpdate !== 'undefined' && lastUpdate - now < REFRESH_TTL) {
                         // Not old enough to update yet.
@@ -253,14 +272,14 @@ var ChannelsList = function (_EventEmitter) {
                     }
 
                     setTimeout(function () {
-                        _this5.api.fetchChannelHistory(channel, function (history) {
+                        _this6.api.fetchChannelHistory(channel, function (history) {
                             // check for rate limit
                             if (history.ok) {
-                                _this5.channels[index].history = _extends({}, history, { lastUpdated: Date.now() });
-                                _this5.setChannels(_this5.channels);
+                                _this6.channels[index].history = _extends({}, history, { lastUpdated: Date.now() });
+                                _this6.setChannels(_this6.channels);
                             } else {
-                                _this5.screen.log("ChannelsList: Could not get history for channel " + channel.id);
-                                _this5.screen.log(JSON.stringify(history));
+                                _this6.screen.log("ChannelsList: Could not get history for channel " + channel.id);
+                                _this6.screen.log(JSON.stringify(history));
                             }
                         });
                     }, delay * queued);
@@ -307,14 +326,14 @@ var ChannelsList = function (_EventEmitter) {
     }, {
         key: 'init',
         value: function init() {
-            var _this6 = this;
+            var _this7 = this;
 
             this.api.fetchChannels(function (channels) {
-                _this6.setChannels(Object.values(channels));
+                _this7.setChannels(Object.values(channels));
                 if (SHOULD_FETCH_HISTORIES) {
-                    _this6.fetchAllHistories();
+                    _this7.fetchAllHistories();
                 }
-                _this6.initMessageListener();
+                _this7.initMessageListener();
             });
         }
     }]);

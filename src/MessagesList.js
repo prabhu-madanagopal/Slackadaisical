@@ -19,7 +19,7 @@ export default class MessagesList {
             label: this.api.getChannelDisplayName(this.channel.channel) + ' (Ctrl-y)',
             left: '0%',
             width: '100%',
-            height: '100%',
+            height: '100%-4',
             tags: true,
             scrollable: true,
             alwaysScroll: true,

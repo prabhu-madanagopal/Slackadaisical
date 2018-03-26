@@ -140,7 +140,7 @@ var MessagesList = function () {
                     color = _this3.config.messageList.userColors[colorIndex];
                 }
                 if (lastDate !== formattedDate) {
-                    content = '{bold}{underline}{default-fg}' + formattedDate + ':{/default-fg}{/underline}{/bold}' + "\n\n";
+                    content = '{underline}{default-fg}' + formattedDate + ':{/default-fg}{/underline}' + "\n\n";
                     isSameDay = false;
                 }
                 if (userName === lastUserName) {

@@ -49,6 +49,8 @@ var ChannelsList = function (_EventEmitter) {
         _this.config = config;
         _this.channels = [];
 
+        _this.setMaxListeners(0);
+
         _this.box = blessed.list({
             parent: _this.screen,
             top: 'top',
@@ -233,6 +235,7 @@ var ChannelsList = function (_EventEmitter) {
                 if (ats == bts) return 0;
                 return ats < bts ? 1 : -1;
             }).forEach(function (ch, i) {
+                _this5.screen.log("ChannelsList: forEach channel " + ch.display_name);
                 // check if has item first
                 if (typeof _this5.box.items[i] !== 'undefined') {
                     _this5.box.setItem(parseInt(i), ch.display_name);

@@ -29,6 +29,7 @@ export default class ChannelsList extends EventEmitter {
         this.config = config;
         this.channels = [];
 
+        this.setMaxListeners(0);
 
         this.box = blessed.list({
             parent: this.screen,

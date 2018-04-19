@@ -122,7 +122,7 @@ export default class MessagesList {
                     content = '{underline}{default-fg}'+formattedDate+':{/default-fg}{/underline}' + "\n\n";
                     isSameDay = false;
                 }
-                if (userName === lastUserName) {
+                if (userName === lastUserName && isSameDay) {
                     isSameOrigin = true;
                     content = content + text;
                 }

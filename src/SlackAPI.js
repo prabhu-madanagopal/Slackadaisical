@@ -16,6 +16,7 @@ export default class SlackAPI extends EventEmitter {
         this.channels = {};
         this.messages = [];
         this.rtm = null;
+        this.setMaxListeners(0);
 
         this.init();
     }
@@ -179,7 +180,7 @@ export default class SlackAPI extends EventEmitter {
     fetchChannels(callback) {
         return this.get(
             'conversations.list',
-            {exclude_archived: true, types: 'public_channel,private_channel,mpim,im', limit: 500},
+            {exclude_archived: true, types: 'public_channel,private_channel,mpim,im', limit: 5000},
             (err, resp, body) => {
 
                 let out = {};

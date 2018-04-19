@@ -24,7 +24,7 @@ var Slacker = function () {
 
         this.screen = blessed.screen({
             smartCSR: true,
-            log: process.env.TMPDIR + '/slacker.log',
+            log: '/tmp/slacker.log',
             debug: true,
             dockBorders: true,
             autoPadding: true,

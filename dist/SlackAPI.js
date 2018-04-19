@@ -32,6 +32,7 @@ var SlackAPI = function (_EventEmitter) {
         _this.channels = {};
         _this.messages = [];
         _this.rtm = null;
+        _this.setMaxListeners(0);
 
         _this.init();
         return _this;
@@ -201,7 +202,7 @@ var SlackAPI = function (_EventEmitter) {
         value: function fetchChannels(callback) {
             var _this6 = this;
 
-            return this.get('conversations.list', { exclude_archived: true, types: 'public_channel,private_channel,mpim,im', limit: 500 }, function (err, resp, body) {
+            return this.get('conversations.list', { exclude_archived: true, types: 'public_channel,private_channel,mpim,im', limit: 5000 }, function (err, resp, body) {
 
                 var out = {};
                 var _iteratorNormalCompletion = true;
@@ -212,6 +213,7 @@ var SlackAPI = function (_EventEmitter) {
                     for (var _iterator = body.channels[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                         var channel = _step.value;
 
+                        _this6.screen.log("API: fetchChannels " + channel.display_name + " display_name " + channel.is_im + " im " + channel.is_member + " is_member ");
                         out[channel.id] = channel;
                     }
                 } catch (err) {
